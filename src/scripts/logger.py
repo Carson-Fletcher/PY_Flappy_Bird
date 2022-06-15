@@ -4,6 +4,8 @@ Does not block runtime exceptions from stopping the execution of the program.
 Classes:
     LoggingLevels: Contains the different logging levels avalible.
     Logger: Class for handling the writing of logs to an output source.
+
+Version: 1.0
 """
 from __future__ import annotations
 
@@ -12,7 +14,7 @@ from datetime import datetime
 from enum import Enum
 from pprint import pformat
 from traceback import extract_stack
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Literal, Optional
 
 
 class LoggingLevels(Enum):
@@ -75,18 +77,19 @@ class Logger:
     Properties:
         logger_name: Name used to indentify the logger which printed a statement.
         default_src: Path to the logging output file.
-        logging_state: Toggle whether the logger will output anything regardless of method calls.
 
     Methods:
-        set_logging_settings: Sets the default behaviour of the output string when logging.
-        get_logging_settings: Gets the current settings.
+        set_settings: Sets the default behaviour of the output string when logging.
+        get_settings: Gets the current settings.
+        set_logging_state: Sets the logging state to the new state.
+        get_logging_state: Gets the current logging state.
         log: Logs information given to the output source.
         log_exception: Allows the logging of runtime exceptions to the default output source.
     """
     def __init__(self, default_src: str, name: str = "") -> None:
         self.logger_name = name
         self.defualt_src = default_src
-        self.logging_state = True
+        self._logging_state = True
         self._settings = _LoggerSettings()
 
     def set_settings(
@@ -123,12 +126,20 @@ class Logger:
         """Returns the current settings as a dict."""
         return self._settings.get_settings()
 
+    def get_logging_state(self) -> bool:
+        """Returns the current logging state."""
+        return self._logging_state
+
+    def set_logging_state(self, state: bool) -> None:
+        """Sets the logging state to the new state."""
+        self._logging_state = state
+
     def _get_logging_string(
             self,
             objects: Iterable[object],
             name: bool,
             date_time: bool,
-            logging_level: Optional[LoggingLevels],
+            logging_level: LoggingLevels | Literal[False],
             stack_trace: bool
         ) -> str:
         """
@@ -148,7 +159,7 @@ class Logger:
         if date_time:
             output_string += f"[{datetime.now().strftime(self._settings.date_time[1])}]"
 
-        if logging_level is not None:
+        if logging_level is not False:
             output_string += f"[{logging_level.value}]"
 
         if stack_trace:
@@ -171,7 +182,7 @@ class Logger:
             src: Optional[str] = None,
             name: Optional[bool] = None,
             date_time: Optional[bool] = None,
-            logging_level: Optional[LoggingLevels] = None,
+            logging_level: Optional[LoggingLevels | Literal[False]] = None,
             stack_trace: Optional[bool] = None
         ) -> None:
         """
@@ -185,7 +196,7 @@ class Logger:
             logging_level: Logging level for the output, if None uses the default settings.
             stack_trace: Toggle the stack_trace, if None uses the default settings.
         """
-        if not self.logging_state:
+        if not self._logging_state:
             return
 
         if src is None:
@@ -201,7 +212,7 @@ class Logger:
             if self._settings.logging_level[0]:
                 logging_level = self._settings.logging_level[1]
             else:
-                logging_level = None
+                logging_level = self._settings.default_logging_level
 
         if stack_trace is None:
             stack_trace = self._settings.stack_trace

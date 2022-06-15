@@ -1,14 +1,14 @@
 """Handles the creating and running of the game instance."""
 from collections import deque
+from os import listdir
 from random import randint
 from sys import exit as sys_exit
 from sys import stderr
 
 import pygame
-
-from .logger import Logger, LoggingLevels
-from .obstacle import Obstacle
-from .player import Player
+from src.scripts.logger import Logger, LoggingLevels
+from src.scripts.obstacle import Obstacle
+from src.scripts.player import Player
 
 
 class Game:
@@ -22,11 +22,10 @@ class Game:
             logging_level=(False, LoggingLevels.INFO),
             stack_trace=True
         )
-        self.logger.logging_state = True
         with open(self.logger.defualt_src, "w", encoding="UTF-8"):
             pass
         pygame.init()
-        stderr.write = self.logger.log_exception
+        stderr.write = self.logger.log_exception  # type: ignore
         self.screen = pygame.display.set_mode((800, 400))
         pygame.display.set_caption("Flappy Bird")
         self.sky_surface = pygame.image.load(
@@ -51,6 +50,7 @@ class Game:
 
     def update(self) -> None:
         """Main update loop."""
+        self.logger.log(listdir())
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -62,7 +62,7 @@ class Game:
                     ):
                         if self.game_active:
                             self.player.move_player(
-                                self.player.position.x, self.player.position.y - 50
+                                self.player.position.x, self.player.position.y - 30
                             )
                     if event.key == pygame.K_SPACE and not self.game_active:
                         self.game_active = True
@@ -123,8 +123,7 @@ class Game:
         self.player.move_player(self.player.position. x, self.player.position.y + 2.5)
         obstacle_list: list[pygame.Rect] = []
         if self.current_obstacles:
-            rect = self.current_obstacles[0].get_rect()
-            obstacle_list.extend((rect[0], rect[1]))
+            obstacle_list.extend(self.current_obstacles[0].get_rect())
         if int(self.player.position.y) not in range(10, 375) or self.player.rect.collidelist(obstacle_list) != -1:
             self.restart()
 
@@ -194,7 +193,7 @@ class Game:
         """Draws rectangle to the screen."""
         if self.current_obstacles:
             to_remove: list[Obstacle] = []
-            for i in self.current_obstacles:                    
+            for i in self.current_obstacles:
                 if i.can_move:
                     for j in i.get_rect():
                         pygame.draw.rect(self.screen, (23, 252, 3), j)

@@ -1,20 +1,15 @@
 """Handles the creating of obstacles within the game instance."""
-from random import randint
-from typing import Literal, Optional
-
 import pygame
-
-from .coordinate import Coordinate
+from src.scripts.coordinate import Coordinate
 
 
 class Obstacle:
     """Class for handling the creating of obstables."""
     def __init__(self) -> None:
         self.size = (50, 300)
-        bottom_rectangle_y = randint(235, 360)
         self.position = [
-            Coordinate(700, bottom_rectangle_y),
-            Coordinate(700, bottom_rectangle_y-(1.8*235))
+            Coordinate(700, 400),
+            Coordinate(700, 0)
         ]
         self.can_move = True
 
@@ -23,10 +18,10 @@ class Obstacle:
         return (
             pygame.Rect(
                 tuple(self.position[0])[0], tuple(self.position[0])[1], self.size[0], self.size[1]
-            ),
+            ), # bottom rect
             pygame.Rect(
                 tuple(self.position[1])[0], tuple(self.position[1])[1], self.size[0], self.size[1]
-            )
+            )  # top rect
         )
 
     def move(self) -> None:

@@ -5,8 +5,7 @@ from json import load as json_load
 from typing import Optional
 
 import pygame
-
-from .coordinate import Coordinate
+from src.scripts.coordinate import Coordinate
 
 
 @dataclass
